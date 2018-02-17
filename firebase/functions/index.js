@@ -33,6 +33,36 @@ function processV1Request (request, response)
   const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
   const app = new DialogflowApp({request: request, response: response});
   // Create handlers for Dialogflow actions as well as a 'default' handler
+
+    const aa =
+        app.buildRichResponse()
+            .addBasicCard(
+                app.buildBasicCard('Card Text')
+                    .setImage(
+                    'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
+                    'Image alternate text')
+                    .setTitle('Hello Title')
+
+            );
+
+    /*const googleRichResponse = app.buildRichResponse()
+        .addSimpleResponse('This is the first simple response for Google Assistant')
+        /*.addBasicCard(app.buildBasicCard(`This is a basic card.  Text in a
+ basic card can include "quotes" and most other unicode characters
+ including emoji 📱.  Basic cards also support some markdown
+ formatting like *emphasis* or _italics_, **strong** or __bold__,
+ and ***bold itallic*** or ___strong emphasis___ as well as other things
+ like line  \nbreaks`) // Note the two spaces before '\n' required for a
+        // line break to be rendered in the card
+            .setSubtitle('This is a subtitle')
+            .setTitle('Title: this is a title')
+            .addButton('This is a button', 'https://assistant.google.com/')
+            .setImage('https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
+                'Image alternate text'))
+        .addSimpleResponse({ speech: 'This is another simple response',
+            displayText: 'This is the another simple response 💁' });*/
+
+
   const actionHandlers =
   {
     // The default welcome intent has been matched, welcome the user (https://dialogflow.com/docs/events#default_welcome_intent)
@@ -41,7 +71,16 @@ function processV1Request (request, response)
       // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
       if (requestSource === googleAssistantRequest)
       {
-        sendGoogleResponse('Hello, From Yash!'); // Send simple response to user
+         app.ask(app.buildRichResponse()
+             .addSimpleResponse('Connect with us!')
+             .addBasicCard(app.buildBasicCard('Please connect')
+                 .setTitle("Title")
+                 .addButton("Button")
+                 .setImage('https://cdn.nucuta.com/2017/09/digitalocean_logo.jpg', 'Image alternate text')
+                 .setImageDisplay('CROPPED'))
+         );
+        //sendGoogleResponse(aa)
+        //sendGoogleResponse('Hello, From Yash!'); // Send simple response to user
       }
       else
       {
@@ -90,7 +129,9 @@ function processV1Request (request, response)
   // Run the proper handler function to handle the request from Dialogflow
   actionHandlers[action]();
     // Function to send correctly formatted Google Assistant responses to Dialogflow which are then sent to the user
-  function sendGoogleResponse (responseToUser) {
+  /*function sendGoogleResponse (responseToUser)
+  {
+
     if (typeof responseToUser === 'string') {
       app.ask(responseToUser); // Google Assistant response
     }
@@ -112,7 +153,7 @@ function processV1Request (request, response)
       console.log('Response to Dialogflow (AoG): ' + JSON.stringify(googleResponse));
       app.ask(googleResponse); // Send response to Dialogflow and Google Assistant
     }
-  }
+  }*/
   // Function to send correctly formatted responses to Dialogflow which are then sent to the user
   function sendResponse (responseToUser)
   {
@@ -142,25 +183,7 @@ function processV1Request (request, response)
 }
 // Construct rich response for Google Assistant (v1 requests only)
 const app = new DialogflowApp();
-const googleRichResponse = app.buildRichResponse()
-  .addSimpleResponse('This is the first simple response for Google Assistant')
-  .addSuggestions(
-    ['Suggestion Chip', 'Another Suggestion Chip'])
-    // Create a basic card and add it to the rich response
-  .addBasicCard(app.buildBasicCard(`This is a basic card.  Text in a
- basic card can include "quotes" and most other unicode characters
- including emoji 📱.  Basic cards also support some markdown
- formatting like *emphasis* or _italics_, **strong** or __bold__,
- and ***bold itallic*** or ___strong emphasis___ as well as other things
- like line  \nbreaks`) // Note the two spaces before '\n' required for a
-                        // line break to be rendered in the card
-    .setSubtitle('This is a subtitle')
-    .setTitle('Title: this is a title')
-    .addButton('This is a button', 'https://assistant.google.com/')
-    .setImage('https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
-      'Image alternate text'))
-  .addSimpleResponse({ speech: 'This is another simple response',
-    displayText: 'This is the another simple response 💁' });
+
 // Rich responses for Slack and Facebook for v1 webhook requests
 const richResponsesV1 = {
   'slack': {
