@@ -44,6 +44,7 @@ function create_droplet_wordpress(nam)
 
 }
 
+
 /*function readFile()
 {
     const fs = require('fs');
@@ -57,7 +58,6 @@ const client_id = "15990d3b8a2f5d4909d79fa80a3101bfbcf8855eeda17a4b27d0717e7d62b
 
 const functions = require('firebase-functions'); // Cloud Functions for Firebase library
 const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
-
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
 
@@ -140,31 +140,18 @@ function processV1Request (request, response)
                             .setTitle('Ubuntu')
                             .setDescription('Ubuntu is open-source Linux based OS. -Yash')
                             .setImage('https://assets.ubuntu.com/v1/1519d940-core_black-orange_st_hex.png', 'Ubuntu'))
-
                 );
-                app.getIntent();
-                let actionMap = new Map();
-                actionMap.set(app.StandardIntents.OPTION, () =>
-                {
-                    const param = app.getSelectedOption();
-                    if (!param)
-                    {
-                        app.ask('You did not select any item from the list or carousel');
-                    }
-                    else if (param.equals('UBUNTUINSTALL'))
-                    {
-                        create_droplet_ubuntu('ubuntu_yash');
-                        app.ask("Ubuntu Droplet Deployed");
-                    }
-                    else if (param.equals('WORDPRESSINSTALL'))
-                    {
-                        create_droplet_wordpress('wordpress_yash');
-                        app.ask("Wordpress Droplet Deployed");
-                        //app.ask('42 gods who ruled on the fate of the dead in the...');
-                    }
 
-                });
-                app.handleRequest(actionMap);
+            },
+            'wordpress.dep' : ()=>
+            {
+                create_droplet_wordpress('WordpressDroplet');
+                app.ask("Wordpress Droplet Deployed");
+            },
+            'ubuntu.dep' : ()=>
+            {
+                create_droplet_ubuntu('UbuntuDroplet');
+                app.ask("Ubuntu Droplet Deployed");
             },
             'take_snapshot' :()=>
             {
