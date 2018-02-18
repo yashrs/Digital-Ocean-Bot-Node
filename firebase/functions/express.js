@@ -1,0 +1,173 @@
+var express = require("express");
+var app = express();
+var digitalocean = require('digitalocean');
+var client = digitalocean.client('19c329e7db37014ad235be7b1f919f3a6f7aa27f8a0dab2945320551eec3c7b1');
+client.account.get(function(err, account) {
+    console.log(err); // null on success
+    console.log(account); //
+});
+
+function snap_shot() {
+    client.droplets.list().then(function(droplets) {
+        var droplet = droplets[0];
+        return client.droplets.snapshot(droplet.id);
+    }).then(function() {
+        console.log("created a snapshot of a Droplet!");
+    }).catch(function(err) {
+        // Deal with an error
+    });
+}
+
+function create_droplet(n,x)
+{
+    client.droplets.create({name:x,region:"BLR1",size:"s-1vcpu-1gb",image:n},function (object) {
+        console.log(object);
+        return object;
+    });
+}
+
+function create_droplet_ubuntu(nam)
+{
+    let image_name = "ubuntu-16-04-x64";
+    create_droplet(image_name,nam);
+}
+function create_droplet_wordpress(nam)
+{
+    let image_name = "wordpress-16-04";
+    create_droplet(image_name,nam);
+
+}
+
+/*function readFile()
+{
+    const fs = require('fs');
+    const data = fs.readFileSync("token.txt");
+}*/
+
+const token = "19c329e7db37014ad235be7b1f919f3a6f7aa27f8a0dab2945320551eec3c7b1";
+
+const client_secret = "34a1d0ef5277a1d682ea2d0813979e7fce42f1121800c558b414fb0bcba00d73"
+const client_id = "15990d3b8a2f5d4909d79fa80a3101bfbcf8855eeda17a4b27d0717e7d62bdfe";
+
+const functions = require('firebase-functions'); // Cloud Functions for Firebase library
+const DialogflowApp = require('actions-on-google').DialogflowApp;
+
+
+
+app.get("/webhook",function (request,respond) {
+    let action = request.body.result.action; // https://dialogflow.com/docs/actions-and-parameters
+    let parameters = request.body.result.parameters; // https://dialogflow.com/docs/actions-and-parameters
+    let inputContexts = request.body.result.contexts; // https://dialogflow.com/docs/contexts
+    let requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
+    const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
+    const app = new DialogflowApp({request: request, response: response});
+    // Create handlers for Dialogflow actions as well as a 'default' handler
+
+    const actionHandlers =
+        {
+            // The default welcome intent has been matched, welcome the user (https://dialogflow.com/docs/events#default_welcome_intent)
+            'input.welcome': () =>
+            {
+                // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
+                if (requestSource === googleAssistantRequest)
+                {
+                    app.ask(app.buildRichResponse()
+                        .addSimpleResponse('Connect with us!')
+                        .addBasicCard(app.buildBasicCard('Please connect')
+                            .setTitle("Connect your account with us!")
+                            .addButton("Click on this to get started!", getInitialLink())
+                            .setSubtitle("Please come back to assistant after you have granted access")
+                            .setImage('https://cdn.nucuta.com/2017/09/digitalocean_logo.jpg', 'Image alternate text')
+                            .setImageDisplay('CROPPED'))
+                    );
+                    //sendGoogleResponse(aa)
+                    //sendGoogleResponse('Hello, From Yash!'); // Send simple response to user
+                }
+                else
+                {
+                    sendResponse('Hello, Welcome to my Dialogflow agent!'); // Send simple response to user
+                }
+            },
+            'create_droplet' : () =>
+            {
+                app.askWithList('Okay, we will help you to do so. Let\'s get started! : ',
+                    // Build a list
+                    app.buildList('Select Droplet to deploy')
+                    // Add the first item to the list
+                        .addItems(app.buildOptionItem('WORDPRESSINSTALL',
+                            ['wordpress', 'wordpress install', 'dropbox wordpress'])
+                            .setTitle('WordPress')
+                            .setDescription('WordPress is a FOSS CMS for blogging. -Yash')
+                            .setImage('https://cdn.wordimpress.com/wp-content/uploads/wordpress.png', 'Wordpress'))
+                        // Add the second item to the list
+                        .addItems(app.buildOptionItem('UBUNTUINSTALL',
+                            ['ubuntu', 'ubuntu install', 'ubuntu wordpress'])
+                            .setTitle('Ubuntu')
+                            .setDescription('Ubuntu is open-source Linux based OS. -Yash')
+                            .setImage('https://assets.ubuntu.com/v1/1519d940-core_black-orange_st_hex.png', 'Ubuntu'))
+
+                );
+                app.getIntent();
+                let actionMap = new Map();
+                actionMap.set(app.StandardIntents.OPTION, () =>
+                {
+                    const param = app.getSelectedOption();
+                    if (!param)
+                    {
+                        app.ask('You did not select any item from the list or carousel');
+                    }
+                    else if (param.equals('UBUNTUINSTALL'))
+                    {
+                        create_droplet_ubuntu('ubuntu_yash');
+                        app.ask("Ubuntu Droplet Deployed");
+                    }
+                    else if (param.equals('WORDPRESSINSTALL'))
+                    {
+                        create_droplet_wordpress('wordpress_yash');
+                        app.ask("Wordpress Droplet Deployed");
+                        //app.ask('42 gods who ruled on the fate of the dead in the...');
+                    }
+
+                });
+                app.handleRequest(actionMap);
+            },
+            'take_snapshot' :()=>
+            {
+
+            }
+            ,
+            // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
+            'input.unknown': () => {
+                // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
+                if (requestSource === googleAssistantRequest) {
+                    sendGoogleResponse('I\'m having trouble, can you try that again?'); // Send simple response to user
+                } else {
+                    sendResponse('I\'m having trouble, can you try that again?'); // Send simple response to user
+                }
+            },
+            // Default handler for unknown or undefined actions
+            'default': () => {
+                // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
+                if (requestSource === googleAssistantRequest) {
+                    let responseToUser = {
+                        //googleRichResponse: googleRichResponse, // Optional, uncomment to enable
+                        //googleOutputContexts: ['weather', 2, { ['city']: 'rome' }], // Optional, uncomment to enable
+                        speech: 'This message is from Dialogflow\'s Cloud Functions for Firebase editor!', // spoken response
+                        text: 'This is from Dialogflow\'s Cloud Functions for Firebase editor! :-)' // displayed response
+                    };
+                    sendGoogleResponse(responseToUser);
+                }
+                else
+                {
+                    let responseToUser =
+                        {
+                            //data: richResponsesV1, // Optional, uncomment to enable
+                            //outputContexts: [{'name': 'weather', 'lifespan': 2, 'parameters': {'city': 'Rome'}}], // Optional, uncomment to enable
+                            speech: 'This message is from Dialogflow\'s Cloud Functions for Firebase editor!', // spoken response
+                            text: 'This is from Dialogflow\'s Cloud Functions for Firebase editor! :-)' // displayed response
+                        };
+                    sendResponse(responseToUser);
+                }
+            }
+        };
+    });
