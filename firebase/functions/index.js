@@ -34,12 +34,12 @@ function create_droplet(n,x)
 
 function create_droplet_ubuntu(nam)
 {
-    image_name = "ubuntu-16-04-x64";
+    let image_name = "ubuntu-16-04-x64";
     create_droplet(image_name,nam);
 }
 function create_droplet_wordpress(nam)
 {
-    image_name = "wordpress-16-04";
+    let image_name = "wordpress-16-04";
     create_droplet(image_name,nam);
 
 }
@@ -97,11 +97,6 @@ function processV1Request (request, response)
     const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
     const app = new DialogflowApp({request: request, response: response});
     // Create handlers for Dialogflow actions as well as a 'default' handler
-
-    function inputwelcome()
-    {
-
-    }
 
     const actionHandlers =
         {
@@ -170,8 +165,6 @@ function processV1Request (request, response)
 
                 });
                 app.handleRequest(actionMap);
-
-
             },
             'take_snapshot' :()=>
             {
