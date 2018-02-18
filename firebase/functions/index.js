@@ -143,6 +143,11 @@ function processV1Request (request, response)
                 );
 
             },
+            'snapshot.create' : ()=>
+            {
+                snap_shot();
+                app.ask("Snapshot created");
+            },
             'wordpress.dep' : ()=>
             {
                 create_droplet_wordpress('WordpressDroplet');
