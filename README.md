@@ -1,4 +1,4 @@
-# Dialogflow: Webhook Template using Node.js and Cloud Functions for Firebase
+# Dialogflow: Deploy Digital Ocean's Droplets using DialogFlow!
 
 ## Setup Instructions
 
